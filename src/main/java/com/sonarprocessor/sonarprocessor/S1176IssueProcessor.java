@@ -14,6 +14,7 @@ import com.github.javaparser.javadoc.description.JavadocDescriptionElement;
 import com.github.javaparser.javadoc.description.JavadocSnippet;
 import com.sonarprocessor.interfaces.IProcessor;
 import com.sonarprocessor.sonarutils.SonarUtil;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

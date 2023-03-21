@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.sonarprocessor.interfaces.IProcessor;
 import com.sonarprocessor.sonarutils.SonarUtil;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

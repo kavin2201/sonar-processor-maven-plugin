@@ -2,12 +2,6 @@ package com.sonarprocessor.mojo;
 
 import com.sonarprocessor.main.SonarProcessor;
 import com.sonarprocessor.models.SonarProcessorModel;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -21,6 +15,13 @@ import org.codehaus.plexus.compiler.util.scan.SimpleSourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.SourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.StaleSourceScanner;
 import org.codehaus.plexus.compiler.util.scan.mapping.SuffixMapping;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /** SonarProcessorMojo */
 @Mojo(name = "sonar-processor", defaultPhase = LifecyclePhase.INSTALL)

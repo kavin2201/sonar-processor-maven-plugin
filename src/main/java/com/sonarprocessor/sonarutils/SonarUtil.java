@@ -3,6 +3,7 @@ package com.sonarprocessor.sonarutils;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.TypeDeclaration;
+
 import java.util.Arrays;
 import java.util.Locale;
 

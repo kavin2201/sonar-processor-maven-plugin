@@ -6,6 +6,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.sonarprocessor.interfaces.IProcessor;
 import com.sonarprocessor.sonarutils.SonarUtil;
+
 import java.util.List;
 
 /**
