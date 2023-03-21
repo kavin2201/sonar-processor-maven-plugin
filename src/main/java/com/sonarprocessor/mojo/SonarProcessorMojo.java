@@ -1,12 +1,14 @@
 package com.sonarprocessor.mojo;
 
 import com.sonarprocessor.main.SonarProcessor;
+import com.sonarprocessor.models.SonarProcessorModel;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -40,6 +42,15 @@ public class SonarProcessorMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "sonar.processor.skip")
     protected boolean skip;
 
+    @Parameter(defaultValue = "false", property = "sonar.processor.format.import")
+    protected boolean formatImport;
+
+    @Parameter(defaultValue = "true", property = "sonar.processor.format")
+    protected boolean format;
+
+    @Parameter(defaultValue = "ALL", property = "sonar.processor.rule")
+    protected String rule;
+
     @Inject private SonarProcessor sonarProcessor;
 
     /**
@@ -50,15 +61,15 @@ public class SonarProcessorMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if ("pom".equals(project.getPackaging())) {
-            getLog().info("Project packaging is POM, skipping...");
-            return;
-        }
         if (skip) {
-            getLog().info("Skipping source reformatting due to plugin configuration.");
+            getLog().info("Skipping sonar processor due to plugin configuration.");
             return;
         }
+        // if ("pom".equals(project.getPackaging())) {
+        // getLog().info("Project packaging is POM, skipping...");
+        // return;
         try {
+            SonarProcessorModel sonarProcessorModel = new SonarProcessorModel();
             Set<File> sourceFiles = new HashSet<>();
             sourceFiles.addAll(findFilesToReformat(sourceDirectory, outputDirectory));
             getLog().info("Total number of files for the execution: " + sourceFiles.size());
@@ -70,7 +81,16 @@ public class SonarProcessorMojo extends AbstractMojo {
                                         return Paths.get(file.toURI());
                                     })
                             .collect(Collectors.toList());
-            sonarProcessor.analyze(javaFiles, "ALL", null, sourceDirectory.getAbsolutePath());
+            if (CollectionUtils.isEmpty(javaFiles)) {
+                getLog().info("No files found for execution..");
+                return;
+            }
+            sonarProcessorModel.setFiles(javaFiles);
+            sonarProcessorModel.setPath(sourceDirectory.getAbsolutePath());
+            sonarProcessorModel.setRule(rule);
+            sonarProcessorModel.setFormatImport(formatImport);
+            sonarProcessorModel.setFormat(format);
+            sonarProcessor.analyze(sonarProcessorModel);
         } catch (Exception e) {
             getLog().error(e.getMessage());
         }

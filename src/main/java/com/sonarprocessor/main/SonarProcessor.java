@@ -21,6 +21,7 @@ import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.google.googlejavaformat.java.FormatterException;
 import com.sonarprocessor.models.S109ProcessModel;
+import com.sonarprocessor.models.SonarProcessorModel;
 import com.sonarprocessor.sonarutils.Navigator;
 import com.sonarprocessor.sonarutils.SourceFormatter;
 import java.io.*;
@@ -106,6 +107,7 @@ public class SonarProcessor {
                 .forEach(
                         file -> {
                             try {
+                                System.out.println(file.toFile().getAbsolutePath());
                                 // To check the variable caller methods
                                 // CombinedTypeSolver cm = new CombinedTypeSolver();
                                 // cm.add(
@@ -143,7 +145,8 @@ public class SonarProcessor {
                                 reorder(cu.getResult().get(), file);
                                 // Format and write the source code
                                 String formatterSource =
-                                        SourceFormatter.format(cu.getResult().get().toString());
+                                        SourceFormatter.format(
+                                                cu.getResult().get().toString(), null);
                                 write(formatterSource, file.toFile());
                             } catch (FormatterException | FileNotFoundException e) {
                                 System.out.println(
@@ -245,7 +248,8 @@ public class SonarProcessor {
                                 reorder(cu.getResult().get(), file);
                                 // Format and write the source code
                                 String formatterSource =
-                                        SourceFormatter.format(cu.getResult().get().toString());
+                                        SourceFormatter.format(
+                                                cu.getResult().get().toString(), null);
                                 write(formatterSource, file.toFile());
                             } catch (FormatterException | FileNotFoundException e) {
                                 System.out.println(
@@ -341,7 +345,7 @@ public class SonarProcessor {
                                 return 3;
                             }
                         }));
-//        nodeList.sort(Comparator.comparing(SonarProcessor::isStatic).reversed());
+        // nodeList.sort(Comparator.comparing(SonarProcessor::isStatic).reversed());
         classOrInterfaceDeclaration.setMembers(nodeList);
     }
 
@@ -401,7 +405,7 @@ public class SonarProcessor {
             // string
             fWriter.write(formatterSource);
             // Printing the contents of a file
-            System.out.println(formatterSource);
+            // System.out.println(formatterSource);
             // Closing the file writing connection
             fWriter.close();
         } catch (Exception e) {
@@ -415,6 +419,78 @@ public class SonarProcessor {
         // new UsernamePasswordCredentialsProvider("p.kavinraj@gmail.com",
         // "Kavin@2201");
         // Git.lsRemoteRepository();
+    }
+
+    /**
+     * analyze
+     *
+     * @param sonarProcessorModel {SonarProcessorModel}
+     */
+    public void analyze(SonarProcessorModel sonarProcessorModel) {
+        Navigator navigator = new Navigator();
+        prepareDefaultData();
+        sonarProcessorModel
+                .getFiles()
+                .parallelStream()
+                .forEach(
+                        file -> {
+                            try {
+                                // To check the variable caller methods
+                                // CombinedTypeSolver cm = new CombinedTypeSolver();
+                                // cm.add(
+                                // new JavaParserTypeSolver(new File(
+                                // SonarProcessor.class
+                                // .getProtectionDomain()
+                                // .getCodeSource()
+                                // .getLocation()
+                                // .toURI())
+                                // .getPath()));
+                                // JavaSymbolSolver javaSymbolSolver =
+                                // new JavaSymbolSolver(cm);
+                                JavaParserTypeSolver javaParserTypeSolver =
+                                        new JavaParserTypeSolver(sonarProcessorModel.getPath());
+                                JavaSymbolSolver javaSymbolSolver =
+                                        new JavaSymbolSolver(javaParserTypeSolver);
+                                // JarTypeSolver jarTypeSolver =
+                                // new JarTypeSolver(new File(
+                                // SonarProcessor.class
+                                // .getProtectionDomain()
+                                // .getCodeSource()
+                                // .getLocation()
+                                // .toURI())
+                                // .getPath());
+                                // JavaSymbolSolver javaSymbolSolver = new
+                                // JavaSymbolSolver(jarTypeSolver);
+                                // Set the parser configuration
+                                ParserConfiguration parserConfiguration = new ParserConfiguration();
+                                parserConfiguration.setSymbolResolver(javaSymbolSolver);
+                                JavaParser jp = new JavaParser(parserConfiguration);
+                                // Parsing the file and resolve the issues
+                                ParseResult<CompilationUnit> cu = jp.parse(file);
+                                navigator.fix(cu.getResult().get(), sonarProcessorModel.getRule());
+                                // resolveTypeResolver(cu.getResult().get());
+                                // stackTraceChange(cu.getResult().get());
+                                // Re-ordering the class members
+                                reorder(cu.getResult().get(), file);
+                                // Format and write the source code
+                                String formatterSource = cu.getResult().get().toString();
+                                if (Boolean.TRUE.equals(sonarProcessorModel.getFormat())) {
+                                    // Format and write the source code
+                                    formatterSource =
+                                            SourceFormatter.format(
+                                                    cu.getResult().get().toString(),
+                                                    sonarProcessorModel);
+                                }
+                                write(formatterSource, file.toFile());
+                            } catch (FormatterException | FileNotFoundException e) {
+                                System.out.println(
+                                        e.getMessage() + " ========== " + file.getFileName());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            } catch (Exception e) {
+                                System.out.println(e.getMessage());
+                            }
+                        });
     }
 
     /** StackTraceModifier */
